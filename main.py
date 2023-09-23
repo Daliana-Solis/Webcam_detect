@@ -1,7 +1,9 @@
 import cv2
 import time
-from emailing import send_email
+from threading import Thread
 import glob
+import os
+from emailing import send_email
 
 video = cv2.VideoCapture(0)
 time.sleep(1)
@@ -9,6 +11,11 @@ time.sleep(1)
 first_frame = None
 status_list = []
 count = 1
+
+def clean_folder():
+    images = glob.glob("images/*.png")
+    for image in images:
+        os.remove(image)
 
 while True:
     status = 0
@@ -62,10 +69,18 @@ while True:
 
     #object detected and left the camera frame
     if status_list[0] == 1 and status_list[1] == 0:
-        send_email(image_w_object)
+        #allows email to send in the bacjgrouns
+        email_thread = Thread(target=send_email, args=(image_w_object, ))
+        email_thread.daemon = True
+
+        #Clean folder in the background
+        clean_thread = Thread(target=clean_folder)
+        clean_thread.daemon = True
+
+        #start email thread
+        email_thread.start()
 
     cv2.imshow("video",frame)
-
     key = cv2.waitKey(1)
 
     # if user clicks 'q', webcam closes/ends
@@ -74,6 +89,9 @@ while True:
 
 
 video.release()
+#Start clean stread
+clean_thread.start()
+
 
 
 

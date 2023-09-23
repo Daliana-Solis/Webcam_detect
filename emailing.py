@@ -3,8 +3,8 @@ from email.message import  EmailMessage
 import imghdr
 
 
-sender = '#email'
-passw = '#email password'
+sender = '#email here'
+passw = '#email password here'
 
 def send_email(image_path):
     email_msg = EmailMessage()
